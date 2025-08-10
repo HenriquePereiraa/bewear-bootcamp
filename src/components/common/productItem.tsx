@@ -20,7 +20,7 @@ export default function ProductItem({
 }: ProductItemProps) {
   const firstVariant = product.variant[0];
   return (
-    <Link href="/">
+    <Link href={`/product-variant/${firstVariant.slug}`}>
       <Image
         src={firstVariant.imageUrl}
         alt={firstVariant.name}
