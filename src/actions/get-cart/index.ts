@@ -39,10 +39,17 @@ export const getCart = async () => {
       .returning();
 
     return {
-        ...newCart,
-        items: []
+      ...newCart,
+      items: [],
+      totalPriceInCents: 0,
     };
   }
 
-  return cart;
+  return {
+    ...cart,
+    totalPriceInCents: cart.items.reduce(
+      (acc, item) => acc + item.productVariant.priceInCents * item.quantity,
+      0,
+    ),
+  };
 };
