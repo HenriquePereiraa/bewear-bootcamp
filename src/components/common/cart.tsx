@@ -1,11 +1,26 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { ShoppingBasketIcon } from "lucide-react";
+import Image from "next/image";
+
+import { getCart } from "@/actions/get-cart";
 
 import { Button } from "../ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../ui/sheet";
 
 export default function Cart() {
+  const { data: cart, isPending: cartIsLoading } = useQuery({
+    queryKey: ["cart"],
+    queryFn: () => getCart(),
+  });
+
   return (
     <Sheet>
       <SheetTrigger>
@@ -13,7 +28,28 @@ export default function Cart() {
           <ShoppingBasketIcon />
         </Button>
       </SheetTrigger>
-      <SheetContent></SheetContent>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Carrinho</SheetTitle>
+        </SheetHeader>
+        <div>
+          {cartIsLoading && <div>Carregando...</div>}
+          {cart?.items.map((item) => (
+            <div key={item.id}>
+              <Image
+                src={item.productVariant.imageUrl}
+                alt={item.productVariant.product.name}
+                width={100}
+                height={100}
+              />
+
+              <div>
+                <h3>{item.productVariant.product.name}</h3>
+              </div>
+            </div>
+          ))}
+        </div>
+      </SheetContent>
     </Sheet>
   );
 }

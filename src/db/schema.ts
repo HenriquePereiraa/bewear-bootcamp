@@ -187,7 +187,7 @@ export const cartRelations = relations(cartTable, ({ one, many }) => ({
     fields: [cartTable.shippingAdressId],
     references: [shippingAddressTable.id],
   }),
-  cartItem: many(cartItemTable),
+  items: many(cartItemTable),
 }));
 
 export const cartItemTable = pgTable("cart_item", {
