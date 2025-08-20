@@ -2,18 +2,20 @@
 
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
-import { z } from "zod";
 
 import { db } from "@/db";
 import { cartItemTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-import { removeProductFromCartSchema } from "./schema";
+import {
+  DecreaseCartProductQuantitySchema,
+  decreaseCartProductQuantitySchema,
+} from "./schema";
 
-export const removeProductFromCart = async (
-  data: z.infer<typeof removeProductFromCartSchema>,
+export const decreaseCartProductQuantityFromCart = async (
+  data: DecreaseCartProductQuantitySchema,
 ) => {
-  removeProductFromCartSchema.parse(data);
+  decreaseCartProductQuantitySchema.parse(data);
 
   //verificar se user esta logado
   const session = await auth.api.getSession({
@@ -42,5 +44,13 @@ export const removeProductFromCart = async (
     throw new Error("Unauthorized");
   }
 
-  await db.delete(cartItemTable).where(eq(cartItemTable.id, cartItem.id));
+  if (cartItem.quantity === 1) {
+    await db.delete(cartItemTable).where(eq(cartItemTable.id, cartItem.id));
+    return;
+  }
+
+  await db
+    .update(cartItemTable)
+    .set({ quantity: cartItem.quantity - 1 })
+    .where(eq(cartItemTable.id, cartItem.id));
 };

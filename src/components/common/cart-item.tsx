@@ -3,6 +3,7 @@ import { MinusIcon, PlusIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
+import { decreaseCartProductQuantityFromCart } from "@/actions/decrease-cart-product-quantity";
 import { removeProductFromCart } from "@/actions/remove-cart-product";
 import { formatCentsToBRL } from "@/helpers/money";
 
@@ -26,9 +27,18 @@ const CartItem = ({
   quantity,
 }: CartItemProps) => {
   const queryClient = useQueryClient();
+
   const removeProductFromCartMutation = useMutation({
     mutationKey: ["remove-cart-product"],
     mutationFn: () => removeProductFromCart({ cartItemId: id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+  });
+
+  const decreaseProductQuantityMutation = useMutation({
+    mutationKey: ["decrease-cart-product-quantity"],
+    mutationFn: () => decreaseCartProductQuantityFromCart({ cartItemId: id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
@@ -41,6 +51,17 @@ const CartItem = ({
       },
       onError: () => {
         toast.error("Error ao remover produto do carrinho.");
+      },
+    });
+  };
+
+  const handleDecreaseQuantityClick = () => {
+    decreaseProductQuantityMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success("Quantidade do produto diminuída.");
+      },
+      onError: () => {
+        toast.error("Erro ao diminuir a quantidade do produto.");
       },
     });
   };
@@ -62,7 +83,11 @@ const CartItem = ({
           </p>
 
           <div className="flex w-[100px] items-center justify-between rounded-lg border p-1">
-            <Button className="h-4 w-4" variant="ghost" onClick={() => {}}>
+            <Button
+              className="h-4 w-4"
+              variant="ghost"
+              onClick={handleDecreaseQuantityClick}
+            >
               <MinusIcon />
             </Button>
             <p className="text-xs font-medium">{quantity}</p>
