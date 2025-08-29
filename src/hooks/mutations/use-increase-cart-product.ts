@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { addProductToCart } from "@/actions/add-cart-product";
 
-import { getUserCartQueryKey } from "../queries/use-cart";
+import { getUseCartQueryKey } from "../queries/use-cart";
 
 export const INCREASE_CART_PRODUCT_QUANTITY_MUTATION_KEY = (
   productVariantId: string,
@@ -15,7 +15,7 @@ export const useIncreaseCartProduct = (productVariantId: string) => {
     mutationKey: INCREASE_CART_PRODUCT_QUANTITY_MUTATION_KEY(productVariantId),
     mutationFn: () => addProductToCart({ productVariantId, quantity: 1 }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getUserCartQueryKey() });
+      queryClient.invalidateQueries({ queryKey: getUseCartQueryKey() });
     },
   });
 };

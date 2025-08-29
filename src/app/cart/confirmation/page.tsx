@@ -4,14 +4,16 @@ import { redirect } from "next/navigation";
 
 import Footer from "@/components/common/footer";
 import { Header } from "@/components/common/header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/db";
 import { shippingAddressTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 import CartSummary from "../components/cart-summary";
-import Addresses from "./components/addresses";
+import { formatAddress } from "../helpers/address";
 
-const IdentificationPage = async () => {
+const ConfirmationPage = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -43,14 +45,39 @@ const IdentificationPage = async () => {
     (acc, item) => acc + item.productVariant.priceInCents * item.quantity,
     0,
   );
+
+  if (!cart.shippingAdress) {
+    redirect("/cart/identification");
+  }
+
   return (
     <div>
       <Header />
       <div className="space-y-4 px-5">
-        <Addresses
-          shippingAddresses={shippingAddresses}
-          defaultShippingAddressId={cart.shippingAdress?.id || null}
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle>Identificação</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Card>
+              <CardContent>
+                <div className="flex items-start space-x-2">
+                  <div className="flex-1">
+                    <div>
+                      <p className="text-sm">
+                        {formatAddress(cart.shippingAdress)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Button className="w-full rounded-full" size="lg">
+              Finalizar compra
+            </Button>
+          </CardContent>
+        </Card>
+
         <CartSummary
           subtotalInCents={cartTotalInCents}
           totalInCents={cartTotalInCents}
@@ -64,6 +91,7 @@ const IdentificationPage = async () => {
           }))}
         />
       </div>
+
       <div className="mt-12">
         <Footer />
       </div>
@@ -71,4 +99,4 @@ const IdentificationPage = async () => {
   );
 };
 
-export default IdentificationPage;
+export default ConfirmationPage;
