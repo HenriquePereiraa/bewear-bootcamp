@@ -275,7 +275,7 @@ export const orderItemTable = pgTable("order_item", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const orderItemRelations = relations(orderItemTable, ({one}) => ({
+export const orderItemRelations = relations(orderItemTable, ({ one }) => ({
   order: one(orderTable, {
     fields: [orderItemTable.orderId],
     references: [orderTable.id],
@@ -283,5 +283,5 @@ export const orderItemRelations = relations(orderItemTable, ({one}) => ({
   productVariant: one(productVariantTable, {
     fields: [orderItemTable.productVariantId],
     references: [productVariantTable.id],
-  })
-}))
+  }),
+}));
