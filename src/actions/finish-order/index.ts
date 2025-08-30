@@ -1,6 +1,7 @@
 "use server";
 
 import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { db } from "@/db";
@@ -37,10 +38,6 @@ export const finishOrder = async () => {
     throw new Error("Cart not found");
   }
 
-  if (!cart.shippingAdress) {
-    throw new Error("Shipping address not found");
-  }
-
   const totalPriceInCents = cart.items.reduce(
     (acc, item) => acc + item.productVariant.priceInCents * item.quantity,
     0,
@@ -48,10 +45,24 @@ export const finishOrder = async () => {
 
   // usar transaction para garantir a "atomisidade", ou seja, deve criar capaz de criar o order e o orderItem
   await db.transaction(async (tx) => {
+    if (!cart.shippingAdress) {
+      throw new Error("Shipping address not found");
+    }
     const [order] = await tx
       .insert(orderTable)
       .values({
-        ...cart.shippingAdress!,
+        email: cart.shippingAdress?.email,
+        zipCode: cart.shippingAdress?.zipCode,
+        country: cart.shippingAdress?.country,
+        phone: cart.shippingAdress?.phone,
+        cpfOrCnpj: cart.shippingAdress?.cpfOrCnpj,
+        city: cart.shippingAdress?.city,
+        complement: cart.shippingAdress?.complement,
+        neighborhood: cart.shippingAdress?.neighborhood,
+        number: cart.shippingAdress?.number,
+        recipientName: cart.shippingAdress?.recipientName,
+        state: cart.shippingAdress?.state,
+        street: cart.shippingAdress?.street,
         userId: session.user.id,
         totalPriceInCents,
         shippingAdressId: cart.shippingAdress!.id,
@@ -71,6 +82,7 @@ export const finishOrder = async () => {
       }));
 
     await tx.insert(orderItemTable).values(orderItemsPayload);
+    await tx.delete(cartTable).where(eq(cartTable.id, cart.id));
     await tx.delete(cartItemTable).where(eq(cartItemTable.cartId, cart.id));
   });
 };
